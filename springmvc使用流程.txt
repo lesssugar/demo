@@ -1,0 +1,5 @@
+web.xml文件中配置的是dispatcherServlet用于接收全部请求并对请求对应的控制器进行分发
+里面填写springmvc-servlet.xml
+springmvc-servlet.xml中主要填写的是注解扫描以及视图解析器
+对应的分发用requestMapping注解
+控制器用controller注解

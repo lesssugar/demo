@@ -1,0 +1,8 @@
+sm整合导入俩者的配置文件，导入jar包
+导入数据库jdbc源文件
+applicationContext和mybatis-config文件
+mybatis中配置的是pojo的简写，用于写sql方法时简写返回值
+applicationContext中
+mapperLocations中写的是xml文件的位置，如果需要注册对应的接口则该xml文件必须现在此处注册
+MapperScannerConfigurer填写的是对应接口所在的包
+serviceMethod出写的是事物所在切面位置

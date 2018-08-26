@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+    http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx-3.2.xsd ">
+
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+        destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+        <!-- <property name="url">
+            <value><![CDATA[jdbc:mysql://127.0.0.1:3306/smbms?
+                    useUnicode=true&characterEncoding=utf-8]]></value>
+        </property> -->
+        <property name="url" value="jdbc:mysql://127.0.0.1:3306/smbms?
+                        useUnicode=true&amp;characterEncoding=utf-8" />
+        <property name="username" value="root" />
+        <property name="password" value="123456" />
+    </bean>
+
+    <!-- 配置SqlSessionFactoryBean -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 引用数据源组件 -->
+        <property name="dataSource" ref="dataSource" />
+        <!-- 引用MyBatis配置文件中的配置 -->
+        <property name="configLocation" value="classpath:mybatis-config.xml" />
+        <!-- 配置SQL映射文件信息 -->
+        <property name="mapperLocations">
+            <list>
+                <value>classpath:cn/mytest/dao/**/*.xml</value>
+            </list>
+        </property>
+    </bean>
+    <!-- 配置SqlSessionTemplate -->
+    <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory" />
+    </bean>
+    <!-- 配置DAO -->
+    <bean id="userMapper" class="cn.mytest.dao.impl.UserMapperImpl">
+        <property name="sqlSession" ref="sqlSessionTemplate" />
+    </bean>
+    <!-- 配置业务Bean -->
+    <bean id="userService" class="cn.mytest.service.impl.UserServiceImpl">
+        <property name="userMapper" ref="userMapper" />
+    </bean>
+</beans>
+使用SqlSessionTemplate需要在dao层写一个实现类写SqlSessionTemplate属性注入
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+    http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx-3.2.xsd ">
+
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+        destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+        <!-- <property name="url">
+            <value><![CDATA[jdbc:mysql://127.0.0.1:3306/smbms?
+                    useUnicode=true&characterEncoding=utf-8]]></value>
+        </property> -->
+        <property name="url" value="jdbc:mysql://127.0.0.1:3306/smbms?
+                        useUnicode=true&amp;characterEncoding=utf-8" />
+        <property name="username" value="root" />
+        <property name="password" value="root" />
+    </bean>
+
+    <!-- 配置SqlSessionFactoryBean -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 引用数据源组件 -->
+        <property name="dataSource" ref="dataSource" />
+        <!-- 引用MyBatis配置文件中的配置 -->
+        <property name="configLocation" value="classpath:mybatis-config.xml" />
+        <!-- 配置SQL映射文件信息 -->
+        <property name="mapperLocations">
+            <list>
+                <value>classpath:cn/smbms/dao/**/*.xml</value>
+            </list>
+        </property>
+    </bean>
+    <!-- 配置DAO -->
+    <bean id="userMapper" class="cn.smbms.dao.user.UserMapperImpl">
+        <property name="sqlSessionFactory" ref="sqlSessionFactory" />
+    </bean>
+    <!-- 配置业务Bean -->
+    <bean id="userService" class="cn.smbms.service.user.UserServiceImpl">
+        <property name="userMapper" ref="userMapper" />
+    </bean>
+</beans>
+Dao层的实现类需要继承SqlSessionDaoSupport抽象类，即可直接调取抽象类中的getSqlSession方法，不用写SqlSessionTemplate
+
+******重要版本*************
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+    http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx-3.2.xsd ">
+
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+        destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+        <!-- <property name="url">
+            <value><![CDATA[jdbc:mysql://127.0.0.1:3306/smbms?
+                    useUnicode=true&characterEncoding=utf-8]]></value>
+        </property> -->
+        <property name="url" value="jdbc:mysql://127.0.0.1:3306/smbms?
+                        useUnicode=true&amp;characterEncoding=utf-8" />
+        <property name="username" value="root" />
+        <property name="password" value="root" />
+    </bean>
+
+    <!-- 配置SqlSessionFactoryBean -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 引用数据源组件 -->
+        <property name="dataSource" ref="dataSource" />
+        <!-- 引用MyBatis配置文件中的配置 -->
+        <property name="configLocation" value="classpath:mybatis-config.xml" />
+        <!-- 配置SQL映射文件信息 -->
+        <property name="mapperLocations">
+            <list>
+                <value>classpath:cn/smbms/dao/**/*.xml</value>
+            </list>
+        </property>
+    </bean>
+    <!-- 配置DAO -->
+    <bean id="userMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+        <property name="mapperInterface" value="cn.smbms.dao.user.UserMapper" />
+        <property name="sqlSessionFactory" ref="sqlSessionFactory" />
+    </bean>
+    <!-- 配置业务Bean -->
+    <bean id="userService" class="cn.smbms.service.user.UserServiceImpl">
+        <property name="userMapper" ref="userMapper" />
+    </bean>
+</beans>
+通过getMapper的方式获取对应的实现xml文件，好处在于不用写dao层实现类，service层直接注入即可
+
+接口所在包的扫描，会将该包下已经拥有过注册了mapper文件的接口自动进行注册
+可以包含多个包名，用','或者';'隔开，
+里面隐式的注入了sqlSessionFactoryBean对象
+如果环境装配了多个sqlSessionFactory实例，则不进行自动装配，应该显示的指定装配的组件是哪一个
+<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+     <!-- <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" /> -->
+     <property name="basePackage" value="cn.smbms.dao" />
+</bean>
+
+<context:component-scan base-package="cn.smbms.service" />
+ioc的注解扫描
+
+ <!-- 定义事务管理器 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <tx:advice id="txAdvice">
+        <tx:attributes>
+            <tx:method name="find*" propagation="SUPPORTS" />
+            <tx:method name="add*" propagation="REQUIRED" />
+            <tx:method name="del*" propagation="REQUIRED" />
+            <tx:method name="update*" propagation="REQUIRED" />
+            <tx:method name="*" propagation="REQUIRED" />
+        </tx:attributes>
+    </tx:advice>
+    <!-- 定义切面 -->
+    <aop:config>
+        <aop:pointcut id="serviceMethod"
+            expression="execution(* cn.smbms.service..*.*(..))" />
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="serviceMethod" />
+    </aop:config>
+
+将数据源配置为属性文件的形式
+	<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-3.2.xsd
+    http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-3.2.xsd">
+
+    <!-- 引入properties文件 -->
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="location">
+            <value>classpath:database.properties</value>
+        </property>
+    </bean>
+    <!-- 配置DataSource -->
+    <bean id="dataSource" destroy-method="close" class="org.apache.commons.dbcp.BasicDataSource">
+        <property name="driverClassName" value="${jdbc.driver}" />
+        <property name="url" value="${jdbc.url}" />
+        <property name="username" value="${jdbc.username}" />
+        <property name="password" value="${jdbc.password}" />
+    </bean>
+
+    <!-- 配置SqlSessionFactoryBean -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 引用数据源组件 -->
+        <property name="dataSource" ref="dataSource" />
+        <!-- 引用MyBatis配置文件中的配置 -->
+        <property name="configLocation" value="classpath:mybatis-config.xml" />
+    </bean>
+    <!-- 配置DAO -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" /> -->
+        <property name="basePackage" value="cn.smbms.dao" />
+    </bean>
+    <!-- 配置业务Bean -->
+    <!-- <bean id="userService" class="cn.smbms.service.user.UserServiceImpl">
+        <property name="userMapper" ref="userMapper" />
+    </bean> -->
+    <context:component-scan base-package="cn.smbms.service" />
+    <!-- 定义事务管理器 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <tx:annotation-driven />
+    <!-- <tx:advice id="txAdvice">
+        <tx:attributes>
+            <tx:method name="find*" propagation="SUPPORTS" />
+            <tx:method name="add*" propagation="REQUIRED" />
+            <tx:method name="del*" propagation="REQUIRED" />
+            <tx:method name="update*" propagation="REQUIRED" />
+            <tx:method name="*" propagation="REQUIRED" />
+        </tx:attributes>
+    </tx:advice> -->
+    <!-- 定义切面 -->
+    <!-- <aop:config>
+        <aop:pointcut id="serviceMethod"
+            expression="execution(* cn.smbms.service..*.*(..))" />
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="serviceMethod" />
+    </aop:config> -->
+</beans>
+
+在tomcat中配置jndi的数据源
+<Resource name="jdbc/smbms" auth="Container" type="javax.sql.DataSource"
+    maxActive="100" maxIdle="30" maxWait="10000" username="root"
+    password="root" driverClassName="com.mysql.jdbc.Driver"
+    url="jdbc:mysql://127.0.0.1:3306/smbms?
+               useUnicode=true&amp;characterEncoding=utf-8"/>
+将总配置文件中的数据源换成这个即可。需要在tomcat环境中进行测试
+<!-- 通过JNDI配置DataSource -->
+<bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+    <!--通过jndiName指定引用的JNDI数据源名称 -->
+    <property name="jndiName">
+        <value>java:comp/env/jdbc/smbms</value>
+    </property>
+</bean>
+
+
+
+这个写在beans里面可以对全部属性进行自动装配
+default-autowire="byType"
